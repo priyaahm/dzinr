@@ -3,6 +3,7 @@ import { Jost } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { QueryProvider } from "@/context/query-provider";
 
 const jostSans = Jost({
   weight: ["100", "200","300","400","500","600","700","800","900"],
@@ -18,7 +19,8 @@ export default function RootLayout({
       <body
         className={`${jostSans.className} antialiased`}
       >
-        <ThemeProvider
+        <QueryProvider>
+          <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
@@ -27,6 +29,8 @@ export default function RootLayout({
             {children}
             <Toaster richColors position="bottom-center" />
           </ThemeProvider>
+        </QueryProvider>
+        
       </body>
     </html>
   );
