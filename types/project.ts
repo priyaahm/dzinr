@@ -15,5 +15,8 @@ export type ProjectType = {
     projectId?: string;
     createdAt: Date;
     updatedAt?: Date;
+
+
+    isLoading?: boolean;
   };
   

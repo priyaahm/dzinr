@@ -59,7 +59,7 @@ const LandingSection = () => {
   };
 
   const handleSubmit = () => {
-    if(!promptText) return
+    if(!promptText) return;
     mutate(promptText);
   }
 
@@ -149,7 +149,7 @@ const LandingSection = () => {
                 <div className="grid grid-cols-1 sm;grid-cols-2 md;grid-cols-3 gap-3 mt-2">
                   {projects ?.map((project:ProjectType) =>(
                     <ProjectCard 
-                    key = {projects.id}
+                    key = {project.id}
                     project = {project}
                     />
                   ))}
@@ -172,7 +172,7 @@ const ProjectCard = memo(({project}: {project: ProjectType}) => {
   const thumbnail = project.thumbnail  || null; 
 
   const onRoute = () => {
-    router.push(`/projects/${project.id}`);
+    router.push(`/project/${project.id}`);
   };
 
   return <div
