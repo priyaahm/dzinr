@@ -2,6 +2,7 @@ import {getKindeServerSession} from "@kinde-oss/kinde-auth-nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextResponse} from "next/server";
 import { generateProjectName} from "@/app/action/action";
+import { inngest } from "@/inngest/client";
 
 export async function GET(request: Request){
     try {
@@ -57,7 +58,22 @@ export async function POST(request: Request){
             },
         });
 
+        try{
+            await inngest.send({
+            name: "ui/generate.screens",
+            data: {
+                userId,
+                projectId: project.id,
+                prompt,
+                
+            },
+        });
+        }catch(error){
+            console.log(error);
+        }
+
 //  Trigger the Ingest
+
 
         return NextResponse.json({
             success: true,

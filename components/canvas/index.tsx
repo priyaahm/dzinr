@@ -11,6 +11,7 @@ import CanvasControls from "./canvas-controls";
 import DeviceFrame from "./device-frame";
 import { ifError } from "assert";
 import DeviceFrameSkeleton from "./device-frame-skeleton";
+import HtmlDialog from "./html-dialog";
 
 const DEMO_HTML = `
 <div class="flex flex-col w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans pt-6 pb-24 px-6 overflow-y-auto relative">
@@ -248,22 +249,25 @@ const Canvas = ({
   isPending: boolean;
   projectName: string | null;
 }) => {
-  const { theme, loadingStatus, frames } =
-    useCanvas();
+  const { theme, loadingStatus, frames, selectedFrameId } = useCanvas();
   const [toolMode, setToolMode] = useState<ToolModeType>(TOOL_MODE_ENUM.SELECT);
   const [zoomPercent, setZoomPercent] = useState<number>(53);
   const [currentScale, setCurrentScale] = useState<number>(0.53);
-
+  const [openHtmlDialog, setOpenHtmlDialog] = useState(false);
+  const selectedFrame = frames?.find((frame) => frame.id === selectedFrameId);
   const currentStatus = isPending
     ? "fetching"
-    : loadingStatus !== "idle" && loadingStatus !== "completed"
+    : loadingStatus !== "idle"
       ? loadingStatus
       : null;
 
+  const onOpenHtmlDialog = () => {
+    setOpenHtmlDialog(true);
+  };
   return (
     <>
       <div className="relative w-full h-full overflow-hidden">
-        <CanvasFloatingToolbar />
+        <CanvasFloatingToolbar projectId={projectId} />
 
         {currentStatus && <CanvasLoader status={currentStatus} />}
 
@@ -308,57 +312,59 @@ const Canvas = ({
                     width: "100%",
                     height: "100%",
                     overflow: "unset",
-                    
                   }}
                   contentStyle={{
                     width: "100%",
                     height: "100%",
-                    
                   }}
                 >
-              <div>{frames?.map((frame, index: number) => {
-                const baseX = 100 + index * 480;
-                const y = 100;
-                if(frame.isLoading){
-                  return (
-                    <DeviceFrameSkeleton
-                    key={index}
-                    style = {{
-                      transform: `translate(${baseX}px, 100px)`,
+                  <div>
+                    {frames?.map((frame, index: number) => {
+                      const baseX = 100 + index * 480;
+                      const y = 100;
+                      if (frame.isLoading) {
+                        return (
+                          <DeviceFrameSkeleton
+                            key={index}
+                            style={{
+                              transform: `translate(${baseX}px, 100px)`,
+                            }}
+                          />
+                        );
+                      }
+                      return (
+                        <DeviceFrame
+                          key={frame.id}
+                          frameId={frame.id}
+                          title={frame.title}
+                          html={frame.htmlContent}
+                          scale={currentScale}
+                          initialPosition={{
+                            x: baseX,
+                            y,
+                          }}
+                          toolMode={toolMode}
+                          theme_style={theme?.style ?? ""}
+                          onOpenHtmlDialog={onOpenHtmlDialog}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* <DeviceFrame
+                    frameId="demo"
+                    title="Demo Screen 345"
+                    html={DEMO_HTML}
+                    scale={currentScale}
+                    initialPosition={{
+                      x: 1000,
+                      y: 100,
                     }}
-                    />
-                  )
-                }
-                  return (
-                <DeviceFrame
-                  key={frame.id}
-                  frameId={frame.id}
-                  title={frame.title}
-                  html={frame.htmlContent}
-                  scale={currentScale}
-                  initialPosition={{
-                    x: baseX,
-                    y,
-                  }}
-                  toolMode={toolMode}
-                  theme_style={theme?.style ?? ""}
-                />
-                );
-              })}</div>
-
-                <DeviceFrame
-  frameId="demo"
-  title="Demo Screen 345"
-  html={DEMO_HTML}
-  scale={currentScale}
-  initialPosition={{
-    x: 1000,
-    y: 100,
-  }}
-  toolMode={toolMode}
-  theme_style={theme?.style ?? ""}
-/>
-
+                    toolMode={toolMode}
+                    theme_style={theme?.style ?? ""}
+                    onOpenHtmlDialog={onOpenHtmlDialog}
+                  /> */}
+                  
                 </TransformComponent>
               </div>
               <CanvasControls
@@ -372,29 +378,37 @@ const Canvas = ({
           )}
         </TransformWrapper>
       </div>
+      <HtmlDialog
+        html={selectedFrame?.htmlContent || DEMO_HTML}
+        theme_style={theme?.style}
+        open={openHtmlDialog}
+        onOpenChange={setOpenHtmlDialog}
+      />
     </>
   );
 };
 
 function CanvasLoader({ status }: { status?: LoadingStatusType | "fetching" }) {
   return (
-    <div
-      className={cn(
-        `absolute top-4 left-1/2 -translate-x-1/2 min-w-40
+    <>
+      <div
+        className={cn(
+          `absolute top-4 left-1/2 -translate-x-1/2 min-w-40
     max-w-full px-4 pt-1.5 pb-2
     rounded-br-xl rounded-bl-xl shadow-md
     flex items-center space-x-2 z-10`,
-        status === "fetching" && "bg-gray-500 text-white",
-        status === "running " && "bg-amber-500 text-white",
-        status === "analyzing" && "bg-blue-500 text-white",
-        status === "generating" && "bg-purple-500 text-white",
-      )}
-    >
-      <Spinner className="w-4 h-4 stroke-3!" />
-      <span className="text-sm font-medium capitalize">
-        {status === "fetching" ? "Loading Project" : status}
-      </span>
-    </div>
+          status === "fetching" && "bg-gray-500 text-white",
+          status === "running" && "bg-amber-500 text-white",
+          status === "analyzing" && "bg-blue-500 text-white",
+          status === "generating" && "bg-purple-500 text-white",
+        )}
+      >
+        <Spinner className="w-4 h-4 stroke-3!" />
+        <span className="text-sm font-medium capitalize">
+          {status === "fetching" ? "Loading Project" : status}
+        </span>
+      </div>
+    </>
   );
 }
 

@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useRouter } from "next/router";
+import { toast } from "sonner";
 
 export const useGetProjectById = (projectId: string) => {
   return useQuery({
@@ -9,5 +11,27 @@ export const useGetProjectById = (projectId: string) => {
       return res.data;
     },
     enabled: !!projectId,
+  });
+};
+
+export const useGenerateDesignById = (projectId: string | null) => {
+ 
+
+  return useMutation({
+    mutationFn: async (prompt: string) =>
+      await axios
+        .post(`/api/project/${projectId}`, {
+          prompt,
+        })
+        .then((res) => res.data),
+
+    onSuccess: (data) => {
+     toast.success("Generation Started ")
+    },
+
+    onError: (error) => {
+      console.log("Project failed", error);
+      toast.error("Failed to generate screen");
+    },
   });
 };

@@ -12,6 +12,7 @@ type PropsType = {
   title: string;
   isSelected?: boolean;
   disabled?: boolean;
+  scale?: number;
   isDownloading: boolean;
   onOpenHtmlDialog: () => void;
   onDownloadPng?: () => void;
@@ -21,6 +22,7 @@ const DeviceFrameToolbar = ({
   title,
   isSelected,
   disabled,
+  scale=1.7,
   isDownloading,
   onOpenHtmlDialog,
   onDownloadPng,
@@ -39,8 +41,9 @@ const DeviceFrameToolbar = ({
     style = {{
         top: isSelected ? "-70px" : "-38px",
         transformOrigin: "center top",  
+        transform:`scale(${scale})`,
     }}>
-        <div className="flex flex-[0.8] cursor-grab items-center
+        <div className="flex flex-1 cursor-grab items-center
         justify-start gap-1.5 active:cursor-grabbing"
         role="button">
             <GripVertical className="size-4 text-muted-foreground" />
@@ -58,7 +61,8 @@ const DeviceFrameToolbar = ({
         {isSelected && (
             <>
              <Separator orientation="vertical" className="h-5! bg-border" />
-             <Button
+             <div className="flex items-center gap-px">
+              <Button
              disabled={disabled}
              size="icon-sm"
              variant="ghost"
@@ -76,6 +80,7 @@ const DeviceFrameToolbar = ({
              onClick={onDownloadPng}>
                {isDownloading ? <Spinner /> : <DownloadIcon /> }  
              </Button>
+             </div>
             </>
         )}
   </div>

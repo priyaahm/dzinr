@@ -9,10 +9,20 @@ import { parseThemeColors } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 import ThemeSelector from "./theme-selector";
 import { Separator } from "../ui/separator";
+import { useGenerateDesignById } from "@/features/use-project-id";
+import { Spinner } from "../ui/spinner";
 
-const CanvasFloatingToolbar = () => {
+const CanvasFloatingToolbar = ({ projectId }: { projectId: string }) => {
   const { themes, setTheme, theme: currentTheme } = useCanvas();
   const [promptText, setPromptText] = useState<string>("");
+
+  const { mutate, isPending } = useGenerateDesignById(projectId);
+
+  const handleAIGenerate = () => {
+    if (!promptText) return;
+    mutate(promptText);
+  };
+
   return (
     <div
       className="
@@ -47,11 +57,13 @@ const CanvasFloatingToolbar = () => {
                 hideSubmitBtn={true}
               ></PromptInput>
               <Button
+                disabled={isPending}
                 className="mt-2 w-full bg-linear-to-r
                         from-purple-500 to-indigo-600 text-white rounded-2xl 
                         shadow-lg shadow-purple-200/50"
+                onClick={handleAIGenerate}
               >
-                Design
+                {isPending ? <Spinner /> : <>Design</>}
               </Button>
             </PopoverContent>
           </Popover>

@@ -10,7 +10,7 @@ import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { Spinner } from "@/components/ui/spinner";
 import { ProjectType } from "@/types/project";
 import { useRouter } from "next/dist/client/components/navigation";
-import { FolderOpenDotIcon, ThumbsDown } from "lucide-react";
+import { FolderOpenDotIcon } from "lucide-react";
 
 const LandingSection = () => {
   const {user} = useKindeBrowserClient();
