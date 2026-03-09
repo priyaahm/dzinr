@@ -76,7 +76,7 @@ const LandingSection = () => {
               </h1>
               <p className="mx-auto max-w-2xl text-center font-medium text-foreground leading-relaxed sm:text-lg">
                 Go from idea to beautiful app mockups in minutes by chatting
-                with AI.
+                with AI. (Signup/Login before getting started)
               </p>
               <div className="flex w-full max-w-3xl flex-col items-center gap-8 relative z-50">
                 <div className="w-full">
