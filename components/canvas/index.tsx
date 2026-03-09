@@ -270,7 +270,7 @@ ${styles}
         </TransformWrapper>
       </div>
       <HtmlDialog
-        html={selectedFrame?.htmlContent || DEMO_HTML}
+        html={selectedFrame?.htmlContent ?? ""}
         theme_style={theme?.style}
         open={openHtmlDialog}
         onOpenChange={setOpenHtmlDialog}
