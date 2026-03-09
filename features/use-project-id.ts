@@ -15,8 +15,6 @@ export const useGetProjectById = (projectId: string) => {
 };
 
 export const useGenerateDesignById = (projectId: string | null) => {
- 
-
   return useMutation({
     mutationFn: async (prompt: string) =>
       await axios
@@ -32,6 +30,26 @@ export const useGenerateDesignById = (projectId: string | null) => {
     onError: (error) => {
       console.log("Project failed", error);
       toast.error("Failed to generate screen");
+    },
+  });
+};
+
+export const useUpdateProject = (projectId: string) => {
+  return useMutation({
+    mutationFn: async (themeId: string) =>
+      await axios
+        .patch(`/api/project/${projectId}`, {
+          themeId,
+        })
+        .then((res) => res.data),
+
+    onSuccess: () => {
+     toast.success("Project Updated ")
+    },
+
+    onError: (error) => {
+      console.log("Project failed", error);
+      toast.error("Failed to update project");
     },
   });
 };

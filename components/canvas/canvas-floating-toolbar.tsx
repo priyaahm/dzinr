@@ -9,18 +9,31 @@ import { parseThemeColors } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 import ThemeSelector from "./theme-selector";
 import { Separator } from "../ui/separator";
-import { useGenerateDesignById } from "@/features/use-project-id";
+import { useGenerateDesignById, useUpdateProject } from "@/features/use-project-id";
 import { Spinner } from "../ui/spinner";
 
-const CanvasFloatingToolbar = ({ projectId }: { projectId: string }) => {
+const CanvasFloatingToolbar = ({ projectId, 
+  isScreenshotting,
+  onScreenshot,
+}: { projectId: string;
+  isScreenshotting: boolean,
+  onScreenshot: () => void 
+ }) => {
   const { themes, setTheme, theme: currentTheme } = useCanvas();
   const [promptText, setPromptText] = useState<string>("");
 
   const { mutate, isPending } = useGenerateDesignById(projectId);
 
+  const update = useUpdateProject(projectId);
+
   const handleAIGenerate = () => {
     if (!promptText) return;
     mutate(promptText);
+  };
+
+    const handleUpdate = () => {
+    if (!currentTheme) return;
+    update.mutate(currentTheme.id);
   };
 
   return (
@@ -111,6 +124,8 @@ const CanvasFloatingToolbar = ({ projectId }: { projectId: string }) => {
               <ThemeSelector />
             </PopoverContent>
           </Popover>
+
+
           {/* Divider */}
           <Separator orientation="vertical" className="h-4!" />
           <div className="flex items-center gap-2">
@@ -118,15 +133,29 @@ const CanvasFloatingToolbar = ({ projectId }: { projectId: string }) => {
               variant="outline"
               size="icon"
               className="rounded-full cursor-pointer"
+              disabled={isScreenshotting}
+              onClick={onScreenshot}
             >
-              <CameraIcon className="size-4" />
+              {isScreenshotting ? (<Spinner />) : (
+                <CameraIcon className="size-4.5" />
+              )}
+              
             </Button>
             <Button
               variant="default"
               size="icon"
               className="rounded-full cursor-pointer"
+              onClick={handleUpdate}
             >
-              <Save className="size-4" />
+              {update.isPending ? (
+                <Spinner />
+              ): (
+                <>
+                  <Save className="size-4" />
+                  
+                </>
+              )}
+              
             </Button>
           </div>
         </div>

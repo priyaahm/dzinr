@@ -96,3 +96,45 @@ export async function POST(request: Request,
     );
     }
 }
+
+export async function PATCH(request: Request, 
+    { params }: { params: Promise<{ id: string }> }
+){
+    try{
+        const { id } = await params;
+        const {themeId} = await request.json();
+        const session = await getKindeServerSession();
+        const user = await session.getUser();
+
+        if(!user) throw new Error("Unauthorized");
+        if(!themeId) throw new Error("Missing Theme");
+
+        const userId = user.id;
+        const project = await prisma.project.update({
+            where: {id, userId},
+            data:{
+                theme: themeId,
+            }
+        })
+
+
+        return NextResponse.json({
+            success: true,
+            project,
+
+        
+        });
+
+    }catch(error){
+        console.log("Error occured", error)
+        return NextResponse.json(
+            {
+            error: "Failed to update project"
+            },
+            {
+                status: 500
+            }
+       
+    );
+    }
+}

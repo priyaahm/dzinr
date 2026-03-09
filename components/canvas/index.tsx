@@ -4,7 +4,7 @@ import { useCanvas } from "@/context/canvas-context";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
 import CanvasFloatingToolbar from "./canvas-floating-toolbar";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import { Transform } from "stream";
 import CanvasControls from "./canvas-controls";
@@ -12,233 +12,10 @@ import DeviceFrame from "./device-frame";
 import { ifError } from "assert";
 import DeviceFrameSkeleton from "./device-frame-skeleton";
 import HtmlDialog from "./html-dialog";
+import { toast } from "sonner";
+import { _catch } from "zod/v4/core";
+import axios from "axios";
 
-const DEMO_HTML = `
-<div class="flex flex-col w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans pt-6 pb-24 px-6 overflow-y-auto relative">
-
-  <!-- Header -->
-  <header class="flex justify-between items-center mb-8">
-    <div>
-      <p class="text-[var(--muted-foreground)] text-xs uppercase tracking-widest font-semibold mb-1">
-        Welcome Back
-      </p>
-      <h1 class="text-2xl font-bold tracking-tight text-[var(--foreground)]">
-        Alex Runner
-      </h1>
-    </div>
-
-    <div class="h-12 w-12 rounded-full border-2 border-[var(--primary)] p-1 overflow-hidden shadow-[0_0_10px_var(--primary)]">
-      <img
-        src="https://i.pravatar.cc/150?img=11"
-        alt="User"
-        class="w-full h-full object-cover rounded-full"
-      />
-    </div>
-  </header>
-
-  <!-- Central Circular Progress -->
-  <div class="relative flex items-center justify-center mb-10">
-
-    <!-- Glow -->
-    <div class="absolute inset-0 bg-[var(--primary)] opacity-20 blur-3xl rounded-full transform scale-75"></div>
-
-    <div class="relative w-64 h-64">
-
-      <svg class="w-full h-full transform -rotate-90">
-
-        <!-- Background -->
-        <circle
-          cx="128"
-          cy="128"
-          r="120"
-          stroke="var(--muted)"
-          stroke-width="8"
-          fill="transparent"
-        />
-
-        <!-- Progress -->
-        <circle
-          cx="128"
-          cy="128"
-          r="120"
-          stroke="var(--primary)"
-          stroke-width="8"
-          fill="transparent"
-          stroke-dasharray="753.6"
-          stroke-dashoffset="188"
-          stroke-linecap="round"
-          class="drop-shadow-[0_0_8px_var(--primary)]"
-        />
-
-        <!-- Inner -->
-        <circle
-          cx="128"
-          cy="128"
-          r="100"
-          stroke="var(--muted)"
-          stroke-width="6"
-          fill="transparent"
-        />
-
-        <circle
-          cx="128"
-          cy="128"
-          r="100"
-          stroke="var(--accent)"
-          stroke-width="6"
-          fill="transparent"
-          stroke-dasharray="628"
-          stroke-dashoffset="200"
-          stroke-linecap="round"
-          class="drop-shadow-[0_0_8px_var(--accent)]"
-        />
-      </svg>
-
-      <!-- Center Text -->
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <iconify-icon icon="lucide:footprints" class="text-[var(--primary)] text-3xl mb-1"></iconify-icon>
-
-        <span class="text-5xl font-black italic tracking-tighter text-[var(--foreground)]">
-          8,432
-        </span>
-
-        <span class="text-[var(--muted-foreground)] text-sm font-medium uppercase tracking-widest">
-          Steps
-        </span>
-
-        <div class="mt-2 flex items-center gap-1 text-[var(--accent)]">
-          <iconify-icon icon="lucide:flame" width="14"></iconify-icon>
-          <span class="text-sm font-bold">420 kcal</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Heart Rate Graph -->
-  <div class="mb-6">
-
-    <div class="flex justify-between items-end mb-4">
-      <h2 class="text-lg font-bold flex items-center gap-2">
-        <iconify-icon icon="lucide:activity" class="text-[var(--accent)]"></iconify-icon>
-        Heart Rate
-      </h2>
-
-      <span class="text-[var(--accent)] font-mono font-bold text-xl drop-shadow-[0_0_5px_var(--accent)]">
-        112 BPM
-      </span>
-    </div>
-
-    <div class="h-32 w-full bg-[var(--card)] rounded-[var(--radius)] border border-[var(--muted)] relative overflow-hidden p-4 flex items-end">
-
-      <!-- Grid -->
-      <div class="absolute inset-0 grid grid-rows-4 opacity-10 pointer-events-none">
-        <div class="border-b border-[var(--foreground)]"></div>
-        <div class="border-b border-[var(--foreground)]"></div>
-        <div class="border-b border-[var(--foreground)]"></div>
-      </div>
-
-      <svg class="w-full h-full overflow-visible" preserveAspectRatio="none">
-
-        <!-- Line -->
-        <path
-          d="M0,80 C20,80 40,50 60,60 S100,20 120,40 S160,80 180,70 S220,10 240,30 S280,60 350,50"
-          fill="none"
-          stroke="var(--accent)"
-          stroke-width="3"
-          class="drop-shadow-[0_0_6px_var(--accent)]"
-        />
-
-        <!-- Area -->
-        <path
-          d="M0,80 C20,80 40,50 60,60 S100,20 120,40 S160,80 180,70 S220,10 240,30 S280,60 350,50 V150 H0 Z"
-          fill="var(--accent)"
-          fill-opacity="0.1"
-        />
-
-      </svg>
-
-    </div>
-  </div>
-
-  <!-- Metrics Grid -->
-  <div class="grid grid-cols-2 gap-4">
-
-    <!-- Water Card -->
-    <button class="bg-[var(--card)] p-5 rounded-[var(--radius)] border border-[var(--muted)] flex flex-col items-start active:scale-95 transition-transform">
-      <div class="bg-[var(--muted)] p-2 rounded-full mb-3 text-[var(--accent)]">
-        <iconify-icon icon="lucide:droplets" width="24" height="24"></iconify-icon>
-      </div>
-
-      <span class="text-[var(--muted-foreground)] text-xs font-bold uppercase">
-        Water
-      </span>
-
-      <span class="text-xl font-bold text-[var(--foreground)]">
-        1,250ml
-      </span>
-    </button>
-
-    <!-- SpO2 -->
-    <button class="col-span-2 bg-[var(--card)] p-4 rounded-[var(--radius)] border border-[var(--muted)] flex items-center justify-between active:scale-95 transition-transform">
-
-      <div class="flex items-center gap-4">
-
-        <div class="bg-[var(--muted)] p-2 rounded-full text-white">
-          <iconify-icon icon="lucide:wind" width="24" height="24"></iconify-icon>
-        </div>
-
-        <div class="flex flex-col text-left">
-          <span class="text-[var(--muted-foreground)] text-xs font-bold uppercase">
-            SpO2 Level
-          </span>
-
-          <span class="text-lg font-bold text-[var(--foreground)]">
-            98% Normal
-          </span>
-        </div>
-
-      </div>
-
-      <div class="h-2 w-24 bg-[var(--muted)] rounded-full overflow-hidden">
-        <div class="h-full w-[98%] bg-gradient-to-r from-[var(--primary)] to-[var(--accent)]"></div>
-      </div>
-
-    </button>
-
-  </div>
-
-  <!-- Bottom Navigation -->
-  <nav class="mobile-bottom-nav">
-
-    <a href="#" class="mobile-bottom-nav-item active">
-      <iconify-icon icon="lucide:home"></iconify-icon>
-      <span>Home</span>
-      <div class="nav-indicator"></div>
-    </a>
-
-    <a href="#" class="mobile-bottom-nav-item">
-      <iconify-icon icon="lucide:activity"></iconify-icon>
-      <span>Stats</span>
-      <div class="nav-indicator"></div>
-    </a>
-
-    <a href="#" class="mobile-bottom-nav-item">
-      <iconify-icon icon="lucide:dumbbell"></iconify-icon>
-      <span>Gym</span>
-      <div class="nav-indicator"></div>
-    </a>
-
-    <a href="#" class="mobile-bottom-nav-item">
-      <iconify-icon icon="lucide:user"></iconify-icon>
-      <span>Profile</span>
-      <div class="nav-indicator"></div>
-    </a>
-
-  </nav>
-
-</div>
-`;
 
 const Canvas = ({
   projectId,
@@ -249,11 +26,15 @@ const Canvas = ({
   isPending: boolean;
   projectName: string | null;
 }) => {
-  const { theme, loadingStatus, frames, selectedFrameId } = useCanvas();
+  const { theme, loadingStatus, frames, selectedFrameId, setSelectedFrameId } =
+    useCanvas();
   const [toolMode, setToolMode] = useState<ToolModeType>(TOOL_MODE_ENUM.SELECT);
   const [zoomPercent, setZoomPercent] = useState<number>(53);
   const [currentScale, setCurrentScale] = useState<number>(0.53);
   const [openHtmlDialog, setOpenHtmlDialog] = useState(false);
+
+  const [isScreenshotting, setIsScreenshotting] = useState(false);
+  const canvasRootRef = useRef<HTMLDivElement>(null);
   const selectedFrame = frames?.find((frame) => frame.id === selectedFrameId);
   const currentStatus = isPending
     ? "fetching"
@@ -261,13 +42,120 @@ const Canvas = ({
       ? loadingStatus
       : null;
 
+  const saveThumbnailToProject = useCallback(
+    async (projectId: string | null) => {
+      try {
+        if (!projectId) return null;
+        const result = getCanvasHtmlContent();
+        if (!result?.html) {
+          return null;
+        }
+        setSelectedFrameId(null);
+
+        const response = await axios.post("/api/screenshot", {
+          html: result.html,
+          width: result.element.scrollWidth,
+          height: result.element.scrollHeight,
+          projectId,
+        });
+        if (response.data) {
+          console.log("Thumbnail saved", response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    [setSelectedFrameId],
+  );
+
+  useEffect(() => {
+    if (!projectId) return;
+    if (loadingStatus !== "completed") return;
+    saveThumbnailToProject(projectId);
+  }, [loadingStatus, projectId, saveThumbnailToProject]);
+
   const onOpenHtmlDialog = () => {
     setOpenHtmlDialog(true);
   };
+
+  function getCanvasHtmlContent() {
+    const el = canvasRootRef.current;
+    if (!el) {
+      toast.error("Canvas element not found");
+      return null;
+    }
+    let styles = "";
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) styles += rule.cssText;
+      } catch {}
+    }
+
+    return {
+      element: el,
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+${styles}
+</style>
+</head>
+<body>${el.outerHTML}</body>
+</html>
+`,
+    };
+  }
+
+  const handleCanvasScreenshot = useCallback(async () => {
+    try {
+      const result = getCanvasHtmlContent();
+      if (!result?.html) {
+        toast.error("Failed to get cnavas content");
+        return null;
+      }
+      setSelectedFrameId(null);
+      setIsScreenshotting(true);
+      const response = await axios.post(
+        "/api/screenshot",
+        {
+          html: result.html,
+          width: result.element.scrollWidth,
+          height: result.element.scrollHeight,
+        },
+        {
+          responseType: "blob",
+          validateStatus: (s) => (s >= 200 && s < 300) || s === 304,
+        },
+      );
+      const title = projectName || "canvas";
+      const blob = new Blob([response.data], { type: "image/png" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${title.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      toast.success("Screenshot downloaded");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to screenshot canvas");
+    } finally {
+      setIsScreenshotting(false);
+    }
+  }, [projectName, setSelectedFrameId]);
+
   return (
     <>
       <div className="relative w-full h-full overflow-hidden">
-        <CanvasFloatingToolbar projectId={projectId} />
+        <CanvasFloatingToolbar
+          isScreenshotting={isScreenshotting}
+          onScreenshot={handleCanvasScreenshot}
+          projectId={projectId}
+        />
 
         {currentStatus && <CanvasLoader status={currentStatus} />}
 
@@ -293,6 +181,7 @@ const Canvas = ({
           {({ zoomIn, zoomOut }) => (
             <>
               <div
+                ref={canvasRootRef}
                 className={cn(
                   `absolute inset-0 w-full h-full bg-[#eee]
         dark:bg-[#242423] p-3
@@ -322,22 +211,25 @@ const Canvas = ({
                     {frames?.map((frame, index: number) => {
                       const baseX = 100 + index * 480;
                       const y = 100;
-                      if (frame.isLoading) {
-                        return (
-                          <DeviceFrameSkeleton
-                            key={index}
-                            style={{
-                              transform: `translate(${baseX}px, 100px)`,
-                            }}
-                          />
-                        );
-                      }
+
+                      // if (frame.isLoading) {
+                      //   return (
+                      //     <DeviceFrameSkeleton
+                      //       key={index}
+                      //       style={{
+                      //         transform: `translate(${baseX}px, 100px)`,
+                      //       }}
+                      //     />
+                      //   );
+                      // }
+
                       return (
                         <DeviceFrame
                           key={frame.id}
                           frameId={frame.id}
                           title={frame.title}
                           html={frame.htmlContent}
+                          isLoading={frame.isLoading}
                           scale={currentScale}
                           initialPosition={{
                             x: baseX,
@@ -364,7 +256,6 @@ const Canvas = ({
                     theme_style={theme?.style ?? ""}
                     onOpenHtmlDialog={onOpenHtmlDialog}
                   /> */}
-                  
                 </TransformComponent>
               </div>
               <CanvasControls
