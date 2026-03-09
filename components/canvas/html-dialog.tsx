@@ -31,14 +31,14 @@ const HtmlDialog = ({
             </DialogHeader>
             <div className="relative w-full h-full overflow-y-auto">
                 <div>
-                    <CodeBlock
+                    <CodeBlock 
                     className="w-full h-auto"
                     code={fullHtml}
                     language="html"
                     showLineNumbers
                     />
                     <CodeBlockCopyButton
-                    code={fullHtml}
+                    
                     />
                 </div>
             </div>
