@@ -2,7 +2,7 @@ Dzinr 🎨
 ------------
 Transform ideas into interfaces — instantly.
 
-Dzinr is a full-stack app that leverages AI to transform user prompts into mobile UI designs, bridging the gap between idea and interface.
+Dzinr is a full-stack app that leverages AI to transform user prompts into mobile UI designs, bridging the gap between idea and interface. 
 
 🚀 Features
 -----------------------------------------------------------------------------------------------------------------------
