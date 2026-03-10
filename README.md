@@ -1,4 +1,5 @@
 Dzinr 🎨
+------------
 Transform ideas into interfaces — instantly.
 
 Dzinr is a full-stack app that leverages AI to transform user prompts into mobile UI designs, bridging the gap between idea and interface.
@@ -13,7 +14,7 @@ Dzinr is a full-stack app that leverages AI to transform user prompts into mobil
 🌐 Interactive Visualization — Web-based interface to explore and interact with generated wireframes
 
 🛠️ Tech Stack
-
+----------------------------------------------------------------------------------------------------------------------
 Frontend: Next.js 16, Tailwind CSS, Redux Toolkit
 Backend: Inngest
 AI Integration: OpenRouter API, Gemini Flash 2.5 Lite
@@ -68,12 +69,10 @@ INNGEST_EVENT_KEY=your_inngest_event_key
 INNGEST_SIGNING_KEY=your_inngest_signing_key
 
 🧭 How It Works
-
+------------------------
 Input — User enters a natural language description of their app idea
 Processing — Inngest orchestrates the agentic workflow, triggering AI generation tasks
 Generation — OpenRouter API + Gemini Flash Lite generate the app title and wireframe layouts
 Preview — Generated wireframes are rendered in real-time via the Wireframe Renderer
 Storage — Results are saved to MongoDB for future access
 
-
-📸 Screenshots
