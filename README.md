@@ -7,7 +7,7 @@ Dzinr is a full-stack app that leverages AI to transform user prompts into mobil
 🚀 Features
 -----------------------------------------------------------------------------------------------------------------------
 - 🧠 Natural Language to UI — Interprets plain text prompts to generate mobile UI wireframes 
--📱 Multi-Screen Layouts — Generates structured, multi-screen designs with logical organization and visual hierarchy
+- 📱 Multi-Screen Layouts — Generates structured, multi-screen designs with logical organization and visual hierarchy
 - ⚙️ Agentic Workflow Orchestration — Automates task pipelines for seamless end-to-end generation
 - ✏️ Smart Title Generation — Automatically generates app titles using Gemini Flash Lite
 - 💾 Persistent Storage — MongoDB integration for saving and retrieving generated designs
@@ -15,13 +15,13 @@ Dzinr is a full-stack app that leverages AI to transform user prompts into mobil
 
 🛠️ Tech Stack
 ----------------------------------------------------------------------------------------------------------------------
--Frontend: Next.js 16, Tailwind CSS, Redux Toolkit
--Backend: Inngest
--AI Integration: OpenRouter API, Gemini Flash 2.5 Lite
--Authentication: Kinde Auth
--Database: MongoDB
--Deployment: Vercel
--Version Control: Git & GitHub
+- Frontend: Next.js 16, Tailwind CSS, Redux Toolkit
+- Backend: Inngest
+- AI Integration: OpenRouter API, Gemini Flash 2.5 Lite
+- Authentication: Kinde Auth
+- Database: MongoDB
+- Deployment: Vercel
+- Version Control: Git & GitHub
 
 📦 Getting Started
 Prerequisites
